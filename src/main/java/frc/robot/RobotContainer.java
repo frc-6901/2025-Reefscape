@@ -15,7 +15,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 
-import frc.robot.generated.TunerConstants;
+import frc.robot.Constants.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 
 public class RobotContainer {
@@ -71,5 +71,6 @@ public class RobotContainer {
 
     public Command getAutonomousCommand() {
         return Commands.print("No autonomous command configured");
+        //return new PathPlannerAuto("Reefscape Auton");
     }
 }
