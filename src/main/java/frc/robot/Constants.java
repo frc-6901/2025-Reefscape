@@ -17,6 +17,9 @@ import edu.wpi.first.units.measure.*;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 
 public final class Constants {
+    // GLobal Constants
+    public static final int TICKS_PER_ROTATION = 2048;
+
     public static final class TunerConstants {
         // Both sets of gains need to be tuned to your individual robot.
     
@@ -285,27 +288,37 @@ public final class Constants {
     }
     
     public static final class ElevatorConstants {
+        // Motor IDs
         public static final int kRightMotorId = 20;
         public static final int kLeftMotorId = 21;
 
-        public static final double kSprocketDiameter = 2.5;
-        public static final double kGearRatio = 3.0;
-        public static final int TICKS_PER_ROTATION = 2048;
+        // Elevator Stages
+        public static final int kStages = 3;
         
-        public static double kS = 0.25;
-        public static double kV = 0.1;
-        public static double kA = 0.01;
+        // Gear Ratio
+        public static final double kGearRatio = 3.0;
+        public static final double kSprocketDiameter = 1.751;
+
+        // Encoder Constants
+        // public static final double kTicksPerInch = (TICKS_PER_ROTATION * kGearRatio) / (kSprocketDiameter * Math.PI);
+        public static final double kTicksPerInch = TICKS_PER_ROTATION / (kSprocketDiameter * Math.PI);  // No gear ratio since it is given to initial config
+        
+        // Position PID Constants
         public static double kP = 0.5;
         public static double kI = 0;
         public static double kD = 0.01;
+        public static double kG = 0.1;
+        // public static double kS = 0.1;
+        // public static double kV = 0.1;
+        // public static double kA = 0.01;
         
         // Heights in INCHES
         public static double kHomeHeight = 0;
-        public static double kL1Height = 0;
-        public static double kL2Height = 0;
-        public static double kL3Height = 0;
-        public static double kL4Height = 0;
-        public static double kCoralIntakeHeight = 0;
+        public static double kL1Height = 2;
+        public static double kL2Height = 4;
+        public static double kL3Height = 8;
+        public static double kL4Height = 10;
+        public static double kCoralIntakeHeight = 5;
     }
 
     public static final class IntakeConstants {
@@ -315,14 +328,14 @@ public final class Constants {
         public static final int kAlgaeLeftMotorId = 33;
 
         public static final double kGearRatio = 125.0;
-        public static final int TICKS_PER_ROTATION = 2048;
         
-        public static double kPivotS = 0.25;
-        public static double kPivotV = 0.1;
-        public static double kPivotA = 0.01;
         public static double kPivotP = 0.5;
         public static double kPivotI = 0;
         public static double kPivotD = 0.01;
+        public static double kPivotG = 0.1;
+        // public static double kPivotS = 0.25;
+        // public static double kPivotV = 0.1;
+        // public static double kPivotA = 0.01;
 
         // Angles in Degrees
         public static double kRestAngle = 0;
