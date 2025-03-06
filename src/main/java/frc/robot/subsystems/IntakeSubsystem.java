@@ -4,17 +4,21 @@
 
 package frc.robot.subsystems;
 
+import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
+import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
+import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
+import static frc.robot.Constants.ElevatorConstants.kI;
 import static frc.robot.Constants.IntakeConstants.*;
 
 public class IntakeSubsystem extends SubsystemBase {
@@ -38,10 +42,10 @@ public class IntakeSubsystem extends SubsystemBase {
   }
 
   private TalonFX m_PivotMotor = new TalonFX(kPivotMotorId, "rio");
-  private MotionMagicVoltage m_PivotMotionMagic = new MotionMagicVoltage(0);
-  private NetworkTableEntry kPivotPEntry = SmartDashboard.getEntry("Intake Pivot P");
-  private NetworkTableEntry kPivotDEntry = SmartDashboard.getEntry("Intake Pivot D");
-  private NetworkTableEntry kPivotVEntry = SmartDashboard.getEntry("Intake Pivot V");
+  private PositionVoltage m_PivotPID_Controller = new PositionVoltage(0);
+  private NetworkTableEntry kPivotPEntry;
+  private NetworkTableEntry kPivotDEntry;
+  private NetworkTableEntry kPivotGEntry;
   private TalonFXConfiguration initialPivotConfig;
 
   private TalonFX m_CoralMotor = new TalonFX(kCoralMotorId, "rio");
@@ -57,30 +61,23 @@ public class IntakeSubsystem extends SubsystemBase {
     m_AlgaeRightMotor.setNeutralMode(NeutralModeValue.Brake);
     m_AlgaeLeftMotor.setNeutralMode(NeutralModeValue.Brake);
 
-    // Left motor follows right
+    // Left Algae motor follows right
     m_AlgaeLeftMotor.setControl(new Follower(kAlgaeRightMotorId, true));
 
-    // Read initial PID values from Shuffleboard
-    SmartDashboard.putNumber("Intake Pivot P", kPivotP);
-    SmartDashboard.putNumber("Intake Pivot D", kPivotD);
-    SmartDashboard.putNumber("Intake Pivot V", kPivotV);
+    // Get the NetworkTable instance and table
+    NetworkTableInstance inst = NetworkTableInstance.getDefault();
+    NetworkTable table = inst.getTable("Intake Subsystem");
 
-    // PID
-    initialPivotConfig = new TalonFXConfiguration();
-    var slot0Configs = initialPivotConfig.Slot0;
-    slot0Configs.kS = kPivotS; // Static friction voltage
-    slot0Configs.kA = kPivotA; // Acceleration feedforward
-    slot0Configs.kI = kPivotI; // Integral gain
+    // Read initial PID values from NetworkTable
+    kPivotPEntry = table.getEntry("Intake Pivot P");
+    kPivotDEntry = table.getEntry("Intake Pivot D");
+    kPivotGEntry = table.getEntry("Intake Pivot G");
 
     // Tunable PID
+    initialPivotConfig = new TalonFXConfiguration();
     applyPIDConfigs(initialPivotConfig);
-    
-    // Motion Magic
-    var motionMagicConfigs = initialPivotConfig.MotionMagic;
-    motionMagicConfigs.MotionMagicCruiseVelocity = 30;
-    motionMagicConfigs.MotionMagicAcceleration = 60;
 
-    // Gear Ratio for correct units
+    // Gear Ratio for correct units CHANGE =============================================================================================
     initialPivotConfig.Feedback.SensorToMechanismRatio = kGearRatio;
 
     // Apply configuration
@@ -88,18 +85,28 @@ public class IntakeSubsystem extends SubsystemBase {
   }
   
   public void applyPIDConfigs(TalonFXConfiguration talonFXConfigs) {
-      var slot0Configs = talonFXConfigs.Slot0;
-  
-      slot0Configs.kP = kPivotPEntry.getDouble(0.0);
-      slot0Configs.kD = kPivotDEntry.getDouble(0.0);
-      slot0Configs.kV = kPivotVEntry.getDouble(0.0);
+    Slot0Configs slot0Configs = talonFXConfigs.Slot0;
+    slot0Configs.kI = kI;
+
+    // slot0Configs.kP = kPEntry.getDouble(0.0);
+    // slot0Configs.kD = kDEntry.getDouble(0.0);
+
+    double newP = kPivotPEntry.getDouble(slot0Configs.kP);
+    double newD = kPivotDEntry.getDouble(slot0Configs.kD);
+    double newG = kPivotGEntry.getDouble(slot0Configs.kG);
+    if (newP != slot0Configs.kP || newD != slot0Configs.kD || newG != slot0Configs.kG) {
+      slot0Configs.kP = newP;
+      slot0Configs.kD = newD;
+      slot0Configs.kG = newG;
+      m_PivotMotor.getConfigurator().apply(initialPivotConfig);
     }
+  }
   
   public void setPivotAngle(IntakeAngle angle) {
     double rotations = angle.getAngle() / 360.0;
     double target = rotations * kGearRatio;
 
-    m_PivotMotor.setControl(m_PivotMotionMagic.withPosition(target));
+    m_PivotMotor.setControl(m_PivotPID_Controller.withPosition(target));
   }
 
   public void intakeCoral() {
@@ -141,6 +148,6 @@ public class IntakeSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     applyPIDConfigs(initialPivotConfig);
-    System.out.println("Pivot Angle: " + getAngle());
+    // System.out.println("Pivot Angle: " + getAngle());
   }
 }
