@@ -6,11 +6,18 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
 
+import java.lang.management.OperatingSystemMXBean;
+
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.simulation.ElevatorSim;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -20,8 +27,10 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 
 import frc.robot.Constants.*;
+import frc.robot.commands.ScoreL4;
 import frc.robot.subsystems.ElevatorSubsystem.ElevatorHeight;
 import frc.robot.subsystems.*;
+import frc.robot.commands.*;
 
 public class RobotContainer {
     private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
@@ -43,7 +52,22 @@ public class RobotContainer {
     public final ElevatorSubsystem elevator = new ElevatorSubsystem();
     public final IntakeSubsystem intake = new IntakeSubsystem();
 
+    private final SendableChooser<Command> autoChooser;
+
+    // operator.
+
     public RobotContainer() {
+        autoChooser = AutoBuilder.buildAutoChooser();
+        SmartDashboard.putData("Auto Mode", autoChooser);
+
+        // Register Named Commands
+        NamedCommands.registerCommand("coralScoreL1", new ScoreL1());
+        // NamedCommands.registerCommand("coralScoreL2", new ScoreL2());
+        // NamedCommands.registerCommand("coralScoreL3", new ScoreL3());
+        // NamedCommands.registerCommand("coralScoreL4", new ScoreL4());
+        NamedCommands.registerCommand("keepAutonCorl", new keepAutonCoral());
+
+
         configureDriverBindings();
         configureOperatorBindings();
     }
@@ -79,30 +103,57 @@ public class RobotContainer {
     }
 
     private void configureOperatorBindings() {
+
+        operator.rightTrigger().whileTrue(new InstantCommand(() -> intake.intakeCoral(.9)));
+        operator.leftTrigger().whileTrue(new InstantCommand(() -> intake.intakeCoral(-.7)));
+
+        operator.rightTrigger().whileFalse(new InstantCommand(() -> intake.intakeCoral(0)));
+        operator.leftTrigger().whileFalse(new InstantCommand(() -> intake.intakeCoral(0)));
+
+        elevator.setDefaultCommand(new RunCommand(() -> {
+            double speed = operator.getRightY() / 2.5;
+            if (Math.abs(speed) > 0.025) {
+            elevator.setSpeed(speed);
+            } else {
+            elevator.setSpeed(0);
+            }
+        }, elevator));
+
+        operator.leftBumper().whileTrue(new InstantCommand(() -> intake.setPivotSpeed(.075)));
+        operator.rightBumper().whileTrue(new InstantCommand(() -> intake.setPivotSpeed(-.5)));
+
+        operator.leftBumper().whileFalse(new InstantCommand(() -> intake.stopPivot()));
+        operator.rightBumper().whileFalse(new InstantCommand(() -> intake.stopPivot()));
+
+
         operator.povDown().onTrue(new SequentialCommandGroup(
-            new InstantCommand(() -> elevator.setElevatorHeight(ElevatorHeight.L1))
+            // new InstantCommand(() -> elevator.setElevatorHeight(ElevatorHeight.L1))
             // new InstantCommand(() -> intake.setPivotAngle(IntakeSubsystem.IntakeAngle.L1))
         ));
 
         operator.povRight().onTrue(new SequentialCommandGroup(
-            new InstantCommand(() -> elevator.setElevatorHeight(ElevatorHeight.L2))
+            // new InstantCommand(() -> elevator.setElevatorHeight(ElevatorHeight.L2))
             // new InstantCommand(() -> intake.setPivotAngle(IntakeSubsystem.IntakeAngle.L2))
         ));
 
         operator.povLeft().onTrue(new SequentialCommandGroup(
-            new InstantCommand(() -> elevator.setElevatorHeight(ElevatorHeight.L3))
+            // new InstantCommand(() -> elevator.setElevatorHeight(ElevatorHeight.L3))
             // new InstantCommand(() -> intake.setPivotAngle(IntakeSubsystem.IntakeAngle.L3))
         ));
 
         operator.povUp().onTrue(new SequentialCommandGroup(
-            new InstantCommand(() -> elevator.setElevatorHeight(ElevatorHeight.L4))
+            // new InstantCommand(() -> elevator.setElevatorHeight(ElevatorHeight.L4))
             // new InstantCommand(() -> intake.setPivotAngle(IntakeSubsystem.IntakeAngle.L4))
         ));
 
     }
 
     public Command getAutonomousCommand() {
-        return Commands.print("No autonomous command configured");
+        // return Commands.print("No autonomous command configured");
         //return new PathPlannerAuto("Reefscape Auton");
+        // return autoChooser.getSelected();
+        // return new PathPlannerAuto("Score L1 Straight");
+        return new PathPlannerAuto("Straight");
+
     }
 }

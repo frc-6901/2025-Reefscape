@@ -1,9 +1,11 @@
 package frc.robot.subsystems;
 
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfigurator;
+import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -17,6 +19,8 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import static frc.robot.Constants.TICKS_PER_ROTATION;
 import static frc.robot.Constants.ElevatorConstants.*;
+
+import java.io.ObjectInputFilter.Config;
 
 public class ElevatorSubsystem extends SubsystemBase {
   // Enum for elevator heights
@@ -55,18 +59,31 @@ public class ElevatorSubsystem extends SubsystemBase {
 
   /** Creates a new ElevatorSubsystem. */
   public ElevatorSubsystem() {
-    // m_rightMotor.setPosition(0);
-    // m_leftMotor.setPosition(0);
+    resetPosition();
 
-    m_rightMotor.setNeutralMode(NeutralModeValue.Coast);
-    m_leftMotor.setNeutralMode(NeutralModeValue.Coast);
+    // m_rightMotor.setNeutralMode(NeutralModeValue.Brake);
+    // m_leftMotor.setNeutralMode(NeutralModeValue.Brake);
 
     MotorOutputConfigs motorConfigs = new MotorOutputConfigs();
-    motorConfigs.Inverted = InvertedValue.CounterClockwise_Positive;
-    m_rightMotor.getConfigurator().apply(motorConfigs);
+
+    CurrentLimitsConfigs currentLimitConfigs = new CurrentLimitsConfigs();
+    currentLimitConfigs.StatorCurrentLimit = 100;
+    currentLimitConfigs.StatorCurrentLimitEnable = true;
+
+    motorConfigs.Inverted = InvertedValue.Clockwise_Positive;
+    // motorConfigs.apply(currentLimitConfigs);
+
+    var configurator = m_rightMotor.getConfigurator();
+    configurator.apply(currentLimitConfigs);
+    configurator.apply(motorConfigs);
+
+    configurator = m_leftMotor.getConfigurator();
+    configurator.apply(currentLimitConfigs);
+
+    // m_rightMotor.getConfigurator().apply(motorConfigs);
 
     // Left motor follows right
-    m_leftMotor.setControl(new Follower(kRightMotorId, true));
+    m_leftMotor.setControl(new Follower(kRightMotorId, false));
 
     // Reset the position to 0
     resetPosition();
@@ -93,7 +110,8 @@ public class ElevatorSubsystem extends SubsystemBase {
     applyPIDConfigs(initialConfig);
 
     // Gear Ratio for correct units
-    initialConfig.Feedback.SensorToMechanismRatio = (kGearRatio * kStages) / (kSprocketDiameter * Math.PI);
+    // initialConfig.Feedback.SensorToMechanismRatio = -(kSprocketDiameter * Math.PI)/(kGearRatio * kStages);
+    initialConfig.Feedback.SensorToMechanismRatio = kGearRatio;
 
     // Apply configuration
     m_rightMotor.getConfigurator().apply(initialConfig);
@@ -119,26 +137,31 @@ public class ElevatorSubsystem extends SubsystemBase {
   }
 
   public void setElevatorHeight(ElevatorHeight height) {
+    // double inches = height.getHeight();
+
+    // double rotations = inches / (Math.PI * kSprocketDiameter);
+    // m_rightMotor.setControl(PID_controller.withPosition(rotations).withFeedForward(kG));
+
+    // // Update target height entry
+    // targetHeightEntry.setDouble(inches);
+
     double inches = height.getHeight();
-    m_rightMotor.setControl(PID_controller.withPosition(inches).withFeedForward(kG));
 
+    // Convert inches to rotations
+    double rotations = (inches / kStages) / (Math.PI * kSprocketDiameter);
 
-    // Convert inches to target rotations
-    // double targetTicks = inches * kTicksPerInch;
-    // double targetRotations = targetTicks / TICKS_PER_ROTATION;
-
-    // m_rightMotor.setControl(PID_controller.withPosition(targetRotations).withFeedForward(kG));
+    // Set the motor position using the PID controller
+    m_rightMotor.setControl(PID_controller.withPosition(rotations).withFeedForward(kG));
 
     // Update target height entry
     targetHeightEntry.setDouble(inches);
   }
 
-  public double getPosition() {
-    return m_rightMotor.getPosition().getValueAsDouble();
-  }
-
   public double getHeight() {
-    return getPosition();
+	double rotations = m_rightMotor.getPosition().getValueAsDouble();
+	double primaryStageInches = rotations * Math.PI * kSprocketDiameter;
+
+    return primaryStageInches * kStages;
   }
 
   public void stop() {
@@ -147,6 +170,11 @@ public class ElevatorSubsystem extends SubsystemBase {
 
   public void resetPosition() {
     m_rightMotor.setPosition(0);
+  }
+
+  public void setSpeed(double speed) {
+	// m_rightMotor.set(speed);
+    m_rightMotor.setControl(new DutyCycleOut(speed));
   }
 
   @Override
@@ -165,12 +193,9 @@ public class ElevatorSubsystem extends SubsystemBase {
     }
 
     // Stall protection
-    if (m_rightMotor.getStatorCurrent().getValueAsDouble() > 40.0) {
-      System.out.println("Elevator Stalled! Stopping...");
-      stop();
-    }
-
-    // Optionally, print the current position for debugging
-    // System.out.println("Elevator Position: " + getPosition());
+    // if (m_rightMotor.getStatorCurrent().getValueAsDouble() > 40.0) {
+    //   System.out.println("Elevator Stalled! Stopping...");
+    //   stop();
+    // }
   }
 }

@@ -1,0 +1,25 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Blue 3 to Coral 2"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "coralScoreL2"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": "Blue 3 to Coral Score 2",
+  "choreoAuto": false
+}

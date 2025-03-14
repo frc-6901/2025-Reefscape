@@ -86,10 +86,14 @@ public final class Constants {
         private static final double kSteerGearRatio = 25;
         private static final Distance kWheelRadius = Inches.of(1.75);
     
+        // private static final boolean kInvertLeftSide = false;
+        // private static final boolean kInvertRightSide = true;
+
         private static final boolean kInvertLeftSide = false;
         private static final boolean kInvertRightSide = true;
+
     
-        private static final int kPigeonId = 20;
+        private static final int kPigeonId = 15;
     
         // These are only used for simulation
         private static final MomentOfInertia kSteerInertia = KilogramSquareMeters.of(0.01);
@@ -313,12 +317,12 @@ public final class Constants {
         // public static double kA = 0.01;
         
         // Heights in INCHES
-        public static double kHomeHeight = 0;
-        public static double kL1Height = 2;
-        public static double kL2Height = 4;
-        public static double kL3Height = 8;
-        public static double kL4Height = 10;
-        public static double kCoralIntakeHeight = 5;
+        public static double kHomeHeight = -0;
+        public static double kL1Height = -200;
+        public static double kL2Height = -4;
+        public static double kL3Height = -8;
+        public static double kL4Height = -10;
+        public static double kCoralIntakeHeight = -5;
     }
 
     public static final class IntakeConstants {
@@ -346,7 +350,7 @@ public final class Constants {
         public static double kCoralIntakeAngle = 20;
 
         // Intake Speeds
-        public static double kCoralIntakeSpeed = 0.5;
+        public static double kCoralIntakeSpeed = 0.4;
         public static double kAlgaeIntakeSpeed = 0.5;
     }
 }
