@@ -17,7 +17,6 @@ import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-import static frc.robot.Constants.TICKS_PER_ROTATION;
 import static frc.robot.Constants.ElevatorConstants.*;
 
 import java.io.ObjectInputFilter.Config;

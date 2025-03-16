@@ -20,7 +20,6 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-import static frc.robot.Constants.ElevatorConstants.kI;
 import static frc.robot.Constants.IntakeConstants.*;
 
 public class IntakeSubsystem extends SubsystemBase {
@@ -102,7 +101,7 @@ public class IntakeSubsystem extends SubsystemBase {
   
   public void applyPIDConfigs(TalonFXConfiguration talonFXConfigs) {
     Slot0Configs slot0Configs = talonFXConfigs.Slot0;
-    slot0Configs.kI = kI;
+    slot0Configs.kI = kPivotI;
 
     slot0Configs.kP = kPivotPEntry.getDouble(0.0);
     slot0Configs.kD = kPivotDEntry.getDouble(0.0);
