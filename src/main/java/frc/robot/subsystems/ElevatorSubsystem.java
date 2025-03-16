@@ -58,32 +58,30 @@ public class ElevatorSubsystem extends SubsystemBase {
 
   /** Creates a new ElevatorSubsystem. */
   public ElevatorSubsystem() {
-    resetPosition();
-
-    // m_rightMotor.setNeutralMode(NeutralModeValue.Brake);
-    // m_leftMotor.setNeutralMode(NeutralModeValue.Brake);
+    
+    m_rightMotor.setNeutralMode(NeutralModeValue.Brake);
+    m_leftMotor.setNeutralMode(NeutralModeValue.Brake);
 
     MotorOutputConfigs motorConfigs = new MotorOutputConfigs();
-
+    motorConfigs.Inverted = InvertedValue.Clockwise_Positive;
+    // motorConfigs.withNeutralMode(NeutralModeValue.Brake);
+    // motorConfigs.apply(currentLimitConfigs);
+    
     CurrentLimitsConfigs currentLimitConfigs = new CurrentLimitsConfigs();
     currentLimitConfigs.StatorCurrentLimit = 100;
     currentLimitConfigs.StatorCurrentLimitEnable = true;
-
-    motorConfigs.Inverted = InvertedValue.Clockwise_Positive;
-    // motorConfigs.apply(currentLimitConfigs);
-
+    
     var configurator = m_rightMotor.getConfigurator();
     configurator.apply(currentLimitConfigs);
     configurator.apply(motorConfigs);
-
+    
     configurator = m_leftMotor.getConfigurator();
     configurator.apply(currentLimitConfigs);
-
-    // m_rightMotor.getConfigurator().apply(motorConfigs);
-
+    configurator.apply(motorConfigs);
+    
     // Left motor follows right
     m_leftMotor.setControl(new Follower(kRightMotorId, false));
-
+    
     // Reset the position to 0
     resetPosition();
 
@@ -110,7 +108,7 @@ public class ElevatorSubsystem extends SubsystemBase {
 
     // Gear Ratio for correct units
     // initialConfig.Feedback.SensorToMechanismRatio = -(kSprocketDiameter * Math.PI)/(kGearRatio * kStages);
-    initialConfig.Feedback.SensorToMechanismRatio = kGearRatio;
+    initialConfig.Feedback.SensorToMechanismRatio = kGearRatio * 2;
 
     // Apply configuration
     m_rightMotor.getConfigurator().apply(initialConfig);
@@ -157,8 +155,8 @@ public class ElevatorSubsystem extends SubsystemBase {
   }
 
   public double getHeight() {
-	double rotations = m_rightMotor.getPosition().getValueAsDouble();
-	double primaryStageInches = rotations * Math.PI * kSprocketDiameter;
+    double rotations = m_rightMotor.getPosition().getValueAsDouble();
+    double primaryStageInches = rotations * Math.PI * kSprocketDiameter;
 
     return primaryStageInches * kStages;
   }
@@ -190,6 +188,9 @@ public class ElevatorSubsystem extends SubsystemBase {
       resetPosition();
       resetPositionEntry.setBoolean(false); // Reset the button state
     }
+    
+    // m_rightMotor.setNeutralMode(NeutralModeValue.Brake);
+    // m_leftMotor.setNeutralMode(NeutralModeValue.Brake);
 
     // Stall protection
     // if (m_rightMotor.getStatorCurrent().getValueAsDouble() > 40.0) {

@@ -40,7 +40,8 @@ public class RobotContainer {
 
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
     public final ElevatorSubsystem elevator = new ElevatorSubsystem();
-    public final IntakeSubsystem intake = new IntakeSubsystem();
+    // public final IntakeSubsystem intake = new IntakeSubsystem();
+    public final VisionSubsystem vision = new VisionSubsystem();
 
     private final SendableChooser<Command> autoChooser;
 
@@ -88,15 +89,17 @@ public class RobotContainer {
         driver.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
 
         drivetrain.registerTelemetry(logger::telemeterize);
+
+        driver.y().whileTrue(new AutoAlignCommand(drivetrain, vision));
     }
 
     private void configureOperatorBindings() {
 
-        operator.rightTrigger().whileTrue(new InstantCommand(() -> intake.intakeCoral(.9)));
-        operator.leftTrigger().whileTrue(new InstantCommand(() -> intake.intakeCoral(-.7)));
+        // operator.rightTrigger().whileTrue(new InstantCommand(() -> intake.intakeCoral(.9)));
+        // operator.leftTrigger().whileTrue(new InstantCommand(() -> intake.intakeCoral(-.7)));
 
-        operator.rightTrigger().whileFalse(new InstantCommand(() -> intake.intakeCoral(0)));
-        operator.leftTrigger().whileFalse(new InstantCommand(() -> intake.intakeCoral(0)));
+        // operator.rightTrigger().whileFalse(new InstantCommand(() -> intake.intakeCoral(0)));
+        // operator.leftTrigger().whileFalse(new InstantCommand(() -> intake.intakeCoral(0)));
 
         elevator.setDefaultCommand(new RunCommand(() -> {
             double speed = operator.getRightY() / 2.5;
@@ -107,11 +110,11 @@ public class RobotContainer {
             }
         }, elevator));
 
-        operator.leftBumper().whileTrue(new InstantCommand(() -> intake.setPivotSpeed(.075)));
-        operator.rightBumper().whileTrue(new InstantCommand(() -> intake.setPivotSpeed(-.5)));
+        // operator.leftBumper().whileTrue(new InstantCommand(() -> intake.setPivotSpeed(.075)));
+        // operator.rightBumper().whileTrue(new InstantCommand(() -> intake.setPivotSpeed(-.5)));
 
-        operator.leftBumper().whileFalse(new InstantCommand(() -> intake.stopPivot()));
-        operator.rightBumper().whileFalse(new InstantCommand(() -> intake.stopPivot()));
+        // operator.leftBumper().whileFalse(new InstantCommand(() -> intake.stopPivot()));
+        // operator.rightBumper().whileFalse(new InstantCommand(() -> intake.stopPivot()));
 
 
         operator.povDown().onTrue(new SequentialCommandGroup(
