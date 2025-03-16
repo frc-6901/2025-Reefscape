@@ -123,19 +123,35 @@ public class VisionSubsystem extends SubsystemBase {
 
     public boolean hasTarget() {
       return camera.getLatestResult().hasTargets();
-    }
+  }  
 
     public double getYaw() {
+      if (!hasTarget()) return 0; // No target, assume aligned
+  
       return camera.getLatestResult().getBestTarget().getYaw();
-    }
+  }
+  
 
     public double getDistance() {
-      return PhotonUtils.calculateDistanceToTargetMeters(
-        0.5, // Measured with a tape measure, or in CAD.
-        1.435, // From 2024 game manual for ID 7
-        Units.degreesToRadians(0), // Measured with a protractor, or in CAD.
-        Units.degreesToRadians(camera.getLatestResult().getBestTarget().getPitch()));
-    }
+      if (!hasTarget()) return Double.MAX_VALUE; // No target found
+  
+      double targetHeightMeters = Units.inchesToMeters(6); // Height of the AprilTag
+      double cameraHeightMeters = Units.inchesToMeters(3); // Height of your camera
+      double cameraPitchRadians = Math.toRadians(0); // Angle your camera is tilted
+  
+      double targetPitchRadians = Math.toRadians(camera.getLatestResult().getBestTarget().getPitch());
+      
+      // Distance calculation using trigonometry
+      return (targetHeightMeters - cameraHeightMeters) / Math.tan(cameraPitchRadians + targetPitchRadians);
+  }
+
+  public double getStrafeOffset() {
+    if (!hasTarget()) return 0; // No target found, assume centered
+
+    return camera.getLatestResult().getBestTarget().getYaw();
+}
+
+  
 
   @Override
   public void periodic() {
