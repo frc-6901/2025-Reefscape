@@ -12,6 +12,7 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 import edu.wpi.first.math.*;
 import edu.wpi.first.math.numbers.*;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import static frc.robot.Constants.VisionConstants.*;
@@ -133,28 +134,23 @@ public class VisionSubsystem extends SubsystemBase {
   
 
     public double getDistance() {
-      if (!hasTarget()) return Double.MAX_VALUE; // No target found
+      if (!hasTarget()) return 0; // No target found
+
+      return camera.getLatestResult().getBestTarget().getBestCameraToTarget().getX();
   
-      double targetHeightMeters = Units.inchesToMeters(6); // Height of the AprilTag
-      double cameraHeightMeters = Units.inchesToMeters(3); // Height of your camera
-      double cameraPitchRadians = Math.toRadians(0); // Angle your camera is tilted
-  
-      double targetPitchRadians = Math.toRadians(camera.getLatestResult().getBestTarget().getPitch());
-      
-      // Distance calculation using trigonometry
-      return (targetHeightMeters - cameraHeightMeters) / Math.tan(cameraPitchRadians + targetPitchRadians);
   }
 
   public double getStrafeOffset() {
     if (!hasTarget()) return 0; // No target found, assume centered
 
-    return camera.getLatestResult().getBestTarget().getYaw();
-}
-
-  
+    return camera.getLatestResult().getBestTarget().getBestCameraToTarget().getY();
+  }
 
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
+    SmartDashboard.putNumber("Y", getStrafeOffset());
+    SmartDashboard.putNumber("X", getDistance());
+    SmartDashboard.putNumber("Yaw", getYaw());
   }
 }

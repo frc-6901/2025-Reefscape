@@ -15,6 +15,7 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import static frc.robot.Constants.ElevatorConstants.*;
@@ -47,38 +48,36 @@ public class ElevatorSubsystem extends SubsystemBase {
 
   private final PositionVoltage PID_controller = new PositionVoltage(0).withSlot(0);
 
+  private final DigitalInput m_limitSwitch = new DigitalInput(kLimitSwitchPort);
+
   private NetworkTableEntry kPEntry;
   private NetworkTableEntry kDEntry;
   private NetworkTableEntry kGEntry;
   private NetworkTableEntry currentHeightEntry;
   private NetworkTableEntry targetHeightEntry;
-  private NetworkTableEntry resetPositionEntry;
+  private NetworkTableEntry limitSwitchStateEntry;
 
   private TalonFXConfiguration initialConfig;
 
   /** Creates a new ElevatorSubsystem. */
   public ElevatorSubsystem() {
-    
-    m_rightMotor.setNeutralMode(NeutralModeValue.Brake);
-    m_leftMotor.setNeutralMode(NeutralModeValue.Brake);
+    // Set motor configurations
+    TalonFXConfiguration m_motorConfigs = new TalonFXConfiguration();
+    m_motorConfigs.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    m_motorConfigs.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
-    MotorOutputConfigs motorConfigs = new MotorOutputConfigs();
-    motorConfigs.Inverted = InvertedValue.Clockwise_Positive;
-    // motorConfigs.withNeutralMode(NeutralModeValue.Brake);
-    // motorConfigs.apply(currentLimitConfigs);
-    
-    CurrentLimitsConfigs currentLimitConfigs = new CurrentLimitsConfigs();
-    currentLimitConfigs.StatorCurrentLimit = 100;
-    currentLimitConfigs.StatorCurrentLimitEnable = true;
-    
-    var configurator = m_rightMotor.getConfigurator();
-    configurator.apply(currentLimitConfigs);
-    configurator.apply(motorConfigs);
-    
-    configurator = m_leftMotor.getConfigurator();
-    configurator.apply(currentLimitConfigs);
-    configurator.apply(motorConfigs);
-    
+    // Set current limits
+    CurrentLimitsConfigs m_currentLimits = new CurrentLimitsConfigs();
+    m_currentLimits.StatorCurrentLimit = 100;
+    m_currentLimits.StatorCurrentLimitEnable = true;
+
+    // Apply motor configurations
+    m_rightMotor.getConfigurator().apply(m_motorConfigs);
+    m_rightMotor.getConfigurator().apply(m_currentLimits);
+
+    m_leftMotor.getConfigurator().apply(m_motorConfigs);
+    m_leftMotor.getConfigurator().apply(m_currentLimits);
+
     // Left motor follows right
     m_leftMotor.setControl(new Follower(kRightMotorId, false));
     
@@ -95,7 +94,7 @@ public class ElevatorSubsystem extends SubsystemBase {
     kGEntry = table.getEntry("Elevator G");
     currentHeightEntry = table.getEntry("Current Height");
     targetHeightEntry = table.getEntry("Target Height");
-    resetPositionEntry = table.getEntry("Reset Position");
+    limitSwitchStateEntry = table.getEntry("Limit Switch State");
 
     // Set initial values for PID entries
     kPEntry.setDouble(kP);
@@ -170,8 +169,10 @@ public class ElevatorSubsystem extends SubsystemBase {
   }
 
   public void setSpeed(double speed) {
-	// m_rightMotor.set(speed);
+    // m_rightMotor.set(speed);
+    // m_rightMotor.setControl(new DutyCycleOut(speed).withLimitReverseMotion(m_limitSwitch.get()));
     m_rightMotor.setControl(new DutyCycleOut(speed));
+
   }
 
   @Override
@@ -183,12 +184,14 @@ public class ElevatorSubsystem extends SubsystemBase {
     double currentHeight = getHeight();
     currentHeightEntry.setDouble(currentHeight);
 
-    // Check if the reset position button is pressed
-    if (resetPositionEntry.getBoolean(false)) {
-      resetPosition();
-      resetPositionEntry.setBoolean(false); // Reset the button state
-    }
+    // if (limitSwitchStateEntry.getBoolean(false) != m_limitSwitch.get())
+    limitSwitchStateEntry.setBoolean(m_limitSwitch.get());
     
+    if (m_limitSwitch.get()) {
+      resetPosition();
+      // stop();
+    }
+
     // m_rightMotor.setNeutralMode(NeutralModeValue.Brake);
     // m_leftMotor.setNeutralMode(NeutralModeValue.Brake);
 

@@ -50,11 +50,11 @@ public class RobotContainer {
         SmartDashboard.putData("Auto Mode", autoChooser);
 
         // Register Named Commands
-        NamedCommands.registerCommand("coralScoreL1", new ScoreL1());
+        // NamedCommands.registerCommand("coralScoreL1", new ScoreL1());
         // NamedCommands.registerCommand("coralScoreL2", new ScoreL2());
         // NamedCommands.registerCommand("coralScoreL3", new ScoreL3());
         // NamedCommands.registerCommand("coralScoreL4", new ScoreL4());
-        NamedCommands.registerCommand("keepAutonCorl", new keepAutonCoral());
+        // NamedCommands.registerCommand("keepAutonCorl", new keepAutonCoral());
 
 
         configureDriverBindings();
@@ -102,13 +102,15 @@ public class RobotContainer {
         // operator.leftTrigger().whileFalse(new InstantCommand(() -> intake.intakeCoral(0)));
 
         elevator.setDefaultCommand(new RunCommand(() -> {
-            double speed = operator.getRightY() / 2.5;
+            double speed = operator.getRightY() / 5;
             if (Math.abs(speed) > 0.025) {
             elevator.setSpeed(speed);
             } else {
             elevator.setSpeed(0);
             }
         }, elevator));
+
+        operator.leftBumper().whileTrue(new InstantCommand(() -> elevator.setSpeed(.05)));
 
         // operator.leftBumper().whileTrue(new InstantCommand(() -> intake.setPivotSpeed(.075)));
         // operator.rightBumper().whileTrue(new InstantCommand(() -> intake.setPivotSpeed(-.5)));

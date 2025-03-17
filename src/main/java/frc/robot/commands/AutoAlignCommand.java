@@ -62,13 +62,13 @@ public class AutoAlignCommand extends Command {
         
         m_DriveSubsystem.setControl(m_driveRequest
             .withVelocityX(xCorrection)
-            .withVelocityY(yCorrection)
-            .withRotationalRate(yawCorrection));
+            .withVelocityY(yCorrection));
+            // .withRotationalRate(yawCorrection));
     }
 
     @Override
     public boolean isFinished() {
-        return m_xPID.atSetpoint() && m_yPID.atSetpoint() && m_yawPID.atSetpoint();
+        return m_yPID.atSetpoint() && m_xPID.atSetpoint() && m_yawPID.atSetpoint();
     }
 
     @Override
