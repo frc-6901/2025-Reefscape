@@ -40,7 +40,8 @@ public class RobotContainer {
 
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
     public final ElevatorSubsystem elevator = new ElevatorSubsystem();
-    // public final IntakeSubsystem intake = new IntakeSubsystem();
+    public final CoralIntakeSubsytem coral = new CoralIntakeSubsytem();
+    public final AlgaeIntakeSubsystem algae = new AlgaeIntakeSubsystem();
     public final VisionSubsystem vision = new VisionSubsystem();
 
     private final SendableChooser<Command> autoChooser;
@@ -55,7 +56,6 @@ public class RobotContainer {
         // NamedCommands.registerCommand("coralScoreL3", new ScoreL3());
         // NamedCommands.registerCommand("coralScoreL4", new ScoreL4());
         // NamedCommands.registerCommand("keepAutonCorl", new keepAutonCoral());
-
 
         configureDriverBindings();
         configureOperatorBindings();
@@ -94,13 +94,7 @@ public class RobotContainer {
     }
 
     private void configureOperatorBindings() {
-
-        // operator.rightTrigger().whileTrue(new InstantCommand(() -> intake.intakeCoral(.9)));
-        // operator.leftTrigger().whileTrue(new InstantCommand(() -> intake.intakeCoral(-.7)));
-
-        // operator.rightTrigger().whileFalse(new InstantCommand(() -> intake.intakeCoral(0)));
-        // operator.leftTrigger().whileFalse(new InstantCommand(() -> intake.intakeCoral(0)));
-
+        // Elevator control
         elevator.setDefaultCommand(new RunCommand(() -> {
             double speed = operator.getRightY() / 5;
             if (Math.abs(speed) > 0.025) {
@@ -110,13 +104,27 @@ public class RobotContainer {
             }
         }, elevator));
 
-        operator.leftBumper().whileTrue(new InstantCommand(() -> elevator.setSpeed(.05)));
+        // Coral Intake control
+        coral.setDefaultCommand(new RunCommand(() -> {
+            coral.stopAllMotors();
+        }, coral));
 
-        // operator.leftBumper().whileTrue(new InstantCommand(() -> intake.setPivotSpeed(.075)));
-        // operator.rightBumper().whileTrue(new InstantCommand(() -> intake.setPivotSpeed(-.5)));
+        operator.leftTrigger().whileTrue(new InstantCommand(() -> coral.intakeCoral()));
+        operator.rightTrigger().whileTrue(new InstantCommand(() -> coral.outtakeCoral()));
 
-        // operator.leftBumper().whileFalse(new InstantCommand(() -> intake.stopPivot()));
-        // operator.rightBumper().whileFalse(new InstantCommand(() -> intake.stopPivot()));
+        operator.leftBumper().whileTrue(new InstantCommand(() -> coral.spinPivot(true)));
+        operator.rightBumper().whileTrue(new InstantCommand(() -> coral.spinPivot(false)));
+
+        // Algae Intake control
+        algae.setDefaultCommand(new RunCommand(() -> {
+            algae.stopAllMotors();
+        }, algae));
+
+        operator.a().whileTrue(new InstantCommand(() -> algae.intakeAlgae()));
+        operator.y().whileTrue(new InstantCommand(() -> algae.outtakeAlgae()));
+
+        operator.x().whileTrue(new InstantCommand(() -> algae.spinPivot(true)));
+        operator.b().whileTrue(new InstantCommand(() -> algae.spinPivot(false)));
 
 
         operator.povDown().onTrue(new SequentialCommandGroup(

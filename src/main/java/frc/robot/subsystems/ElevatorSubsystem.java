@@ -1,10 +1,8 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
-import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.configs.TalonFXConfigurator;
 import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.PositionVoltage;
@@ -19,8 +17,6 @@ import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import static frc.robot.Constants.ElevatorConstants.*;
-
-import java.io.ObjectInputFilter.Config;
 
 public class ElevatorSubsystem extends SubsystemBase {
   // Enum for elevator heights
@@ -178,7 +174,7 @@ public class ElevatorSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     // Apply PID configurations from NetworkTable entries
-    applyPIDConfigs(initialConfig);
+    // applyPIDConfigs(initialConfig);
 
     // Update current height entry
     double currentHeight = getHeight();

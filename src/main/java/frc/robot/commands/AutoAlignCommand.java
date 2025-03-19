@@ -62,8 +62,8 @@ public class AutoAlignCommand extends Command {
         
         m_DriveSubsystem.setControl(m_driveRequest
             .withVelocityX(xCorrection)
-            .withVelocityY(yCorrection));
-            // .withRotationalRate(yawCorrection));
+            .withVelocityY(yCorrection)
+            .withRotationalRate(yawCorrection));
     }
 
     @Override

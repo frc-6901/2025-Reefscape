@@ -350,32 +350,65 @@ public final class Constants {
         public static double kCoralIntakeHeight = -5;
     }
 
-    public static final class IntakeConstants {
+    public static final class AlgaeIntakeConstants {
+        // Motor IDs
         public static final int kPivotMotorId = 30;
-        public static final int kCoralMotorId = 31;
-        public static final int kAlgaeRightMotorId = 32;
-        public static final int kAlgaeLeftMotorId = 33;
+        public static final int kRightMotorId = 31;
+        public static final int kLeftMotorId = 32;
 
-        public static final double kGearRatio = 125.0;
+        // Can Bus
+        public static final String kCanBusName = "rio";
+
+        // Gear Ratios
+        public static final double kPivotGearRatio = 125.0;
+        public static final double kIntakeGearRatio = 36.0;
         
+        // Speeds
+        public static double kPivotSpeed = 0.5;
+        public static double kIntakeSpeed = 0.7;
+        public static double kOuttakeSpeed = -0.7;
+
+        // PID Angles
+        public static double kHomeAngle = 0;
+        public static double kReefAngle = 35;
+        public static double kProcessorAngle = 35;
+        public static double kBargeAngle = 35;
+
+        // PID Constants
         public static double kPivotP = 0.5;
         public static double kPivotI = 0;
         public static double kPivotD = 0.01;
-        public static double kPivotG = 0.1;
-        // public static double kPivotS = 0.25;
-        // public static double kPivotV = 0.1;
-        // public static double kPivotA = 0.01;
+        public static double kPivotG = 0.3;
+    }
 
-        // Angles in Degrees
-        public static double kRestAngle = 0;
-        public static double kL1Angle = 15;
-        public static double kL2Angle = 30;
-        public static double kL3Angle = 30;
+    public static final class CoralIntakeConstants {
+        // Motor IDs
+        public static final int kPivotMotorId = 35;
+        public static final int kIntakeMotorId = 36;
+
+        // Can Bus
+        public static final String kCanBusName = "rio";
+
+        // Gear Ratios
+        public static final double kPivotGearRatio = 45.0;
+        public static final double kIntakeGearRatio = 45.0;
+
+        // Speeds
+        public static double kPivotSpeed = 0.5;
+        public static double kIntakeSpeed = 0.7;
+        public static double kOuttakeSpeed = -0.7;
+
+        // PID Angles
+        public static double kHomeAngle = 0;
+        public static double kL1Angle = 35;
+        public static double kL2Angle = 35;
+        public static double kL3Angle = 35;
         public static double kL4Angle = 60;
-        public static double kCoralIntakeAngle = 20;
+        public static double kIntakeAngle = 35;
 
-        // Intake Speeds
-        public static double kCoralIntakeSpeed = 0.4;
-        public static double kAlgaeIntakeSpeed = 0.5;
+        // PID Constants
+        public static double kPivotP = 0.5;
+        public static double kPivotI = 0;
+        public static double kPivotD = 0.01;
     }
 }
