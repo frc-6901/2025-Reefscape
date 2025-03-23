@@ -70,7 +70,7 @@ public class AlgaeIntakeSubsystem extends SubsystemBase {
     // Algae Intake Motors Configuration
     TalonFXConfiguration m_intkeMotorConfigs = new TalonFXConfiguration();
     m_intkeMotorConfigs.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-    m_intkeMotorConfigs.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+    m_intkeMotorConfigs.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
 
     // Algae Intake Current Limit Configuration
     CurrentLimitsConfigs m_intakeCurrentLimits = new CurrentLimitsConfigs();
@@ -83,11 +83,11 @@ public class AlgaeIntakeSubsystem extends SubsystemBase {
     m_leftMotor.getConfigurator().apply(m_intakeCurrentLimits);
 
     // Left motor follows right
-    m_leftMotor.setControl(new Follower(kRightMotorId, true));
+    // m_leftMotor.setControl(new Follower(kRightMotorId, true));
+    m_rightMotor.setControl(new Follower(kLeftMotorId, true));
 
     // Pivot PID Controller
     m_pivotPIDControllerRequest = new PositionVoltage(0).withSlot(0);
-
 
     // Reset pivot position
     resetPivotAngle();
@@ -114,16 +114,20 @@ public class AlgaeIntakeSubsystem extends SubsystemBase {
   }
 
   public void intakeAlgae() {
-    m_rightMotor.setControl(new DutyCycleOut(kIntakeSpeed));
+    m_leftMotor.setControl(new DutyCycleOut(kIntakeSpeed));
   }
 
   public void outtakeAlgae() {
-    m_rightMotor.setControl(new DutyCycleOut(kOuttakeSpeed));
+    m_leftMotor.setControl(new DutyCycleOut(kOuttakeSpeed));
+  }
+
+  public void stopIntake() {
+    m_leftMotor.setControl(new DutyCycleOut(0));
   }
 
   public void stopAllMotors() {
     stopPivot();
-    m_rightMotor.setControl(new DutyCycleOut(0));
+    m_leftMotor.setControl(new DutyCycleOut(0));
   }
 
   @Override

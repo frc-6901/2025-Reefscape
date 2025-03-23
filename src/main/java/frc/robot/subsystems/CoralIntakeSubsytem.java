@@ -61,8 +61,8 @@ public class CoralIntakeSubsytem extends SubsystemBase {
 
     // Pivot Current Limit Configuration
     CurrentLimitsConfigs m_pivotCurrentLimits = new CurrentLimitsConfigs();
-    m_pivotCurrentLimits.StatorCurrentLimit = 40;
-    m_pivotCurrentLimits.StatorCurrentLimitEnable = true;
+    m_pivotCurrentLimits.StatorCurrentLimit = 120;
+    m_pivotCurrentLimits.StatorCurrentLimitEnable = false;
 
     m_pivotMotor.getConfigurator().apply(m_pivotMotorConfigs);
     m_pivotMotor.getConfigurator().apply(m_pivotCurrentLimits);
@@ -92,6 +92,7 @@ public class CoralIntakeSubsytem extends SubsystemBase {
   }
 
   public void setPivotAngle(CoralIntakeAngles angle) {
+    //m_pivotMotor.setControl(m_pivotPIDControllerRequest.withPosition(angle.getAngle() - getPivotAngle()));
     m_pivotMotor.setControl(m_pivotPIDControllerRequest.withPosition(angle.getAngle()));
   }
 
@@ -113,6 +114,10 @@ public class CoralIntakeSubsytem extends SubsystemBase {
 
   public void outtakeCoral() {
     m_intakeMotor.setControl(new DutyCycleOut(kOuttakeSpeed));
+  }
+
+  public void stopIntake() {
+    m_intakeMotor.setControl(new DutyCycleOut(0));
   }
 
   public void stopAllMotors() {

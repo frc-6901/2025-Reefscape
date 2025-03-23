@@ -44,7 +44,7 @@ public class ElevatorSubsystem extends SubsystemBase {
 
   private final PositionVoltage PID_controller = new PositionVoltage(0).withSlot(0);
 
-  private final DigitalInput m_limitSwitch = new DigitalInput(kLimitSwitchPort);
+  private final DigitalInput m_limitSwitch;
 
   private NetworkTableEntry kPEntry;
   private NetworkTableEntry kDEntry;
@@ -53,19 +53,23 @@ public class ElevatorSubsystem extends SubsystemBase {
   private NetworkTableEntry targetHeightEntry;
   private NetworkTableEntry limitSwitchStateEntry;
 
-  private TalonFXConfiguration initialConfig;
-
   /** Creates a new ElevatorSubsystem. */
   public ElevatorSubsystem() {
     // Set motor configurations
     TalonFXConfiguration m_motorConfigs = new TalonFXConfiguration();
     m_motorConfigs.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     m_motorConfigs.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+    m_motorConfigs.Slot0.kP = kP;
+    m_motorConfigs.Slot0.kI = kI;
+    m_motorConfigs.Slot0.kD = kD;
+    // m_motorConfigs.Slot0.kG = kG;
 
     // Set current limits
     CurrentLimitsConfigs m_currentLimits = new CurrentLimitsConfigs();
-    m_currentLimits.StatorCurrentLimit = 100;
+    m_currentLimits.StatorCurrentLimit = 120;
     m_currentLimits.StatorCurrentLimitEnable = true;
+
+    m_motorConfigs.Feedback.SensorToMechanismRatio = kGearRatio * Math.PI * kSprocketDiameter * kStages;
 
     // Apply motor configurations
     m_rightMotor.getConfigurator().apply(m_motorConfigs);
@@ -76,6 +80,8 @@ public class ElevatorSubsystem extends SubsystemBase {
 
     // Left motor follows right
     m_leftMotor.setControl(new Follower(kRightMotorId, false));
+
+    m_limitSwitch = new DigitalInput(kLimitSwitchPort);
     
     // Reset the position to 0
     resetPosition();
@@ -85,75 +91,62 @@ public class ElevatorSubsystem extends SubsystemBase {
     NetworkTable table = inst.getTable("Elevator Subsystem");
 
     // Initialize NetworkTable entries
-    kPEntry = table.getEntry("Elevator P");
-    kDEntry = table.getEntry("Elevator D");
-    kGEntry = table.getEntry("Elevator G");
+    // kPEntry = table.getEntry("Elevator P");
+    // kDEntry = table.getEntry("Elevator D");
+    // kGEntry = table.getEntry("Elevator G");
     currentHeightEntry = table.getEntry("Current Height");
-    targetHeightEntry = table.getEntry("Target Height");
+    // targetHeightEntry = table.getEntry("Target Height");
     limitSwitchStateEntry = table.getEntry("Limit Switch State");
 
-    // Set initial values for PID entries
-    kPEntry.setDouble(kP);
-    kDEntry.setDouble(kD);
-    kGEntry.setDouble(kG);
+    // // Set initial values for PID entries
+    // kPEntry.setDouble(kP);
+    // kDEntry.setDouble(kD);
+    // kGEntry.setDouble(kG);
 
     // Tunable PID
-    initialConfig = new TalonFXConfiguration();
-    applyPIDConfigs(initialConfig);
+    // initialConfig = new TalonFXConfiguration();
+    // applyPIDConfigs(initialConfig);
 
     // Gear Ratio for correct units
     // initialConfig.Feedback.SensorToMechanismRatio = -(kSprocketDiameter * Math.PI)/(kGearRatio * kStages);
-    initialConfig.Feedback.SensorToMechanismRatio = kGearRatio * 2;
+    // initialConfig.Feedback.SensorToMechanismRatio = kGearRatio * 2;
 
     // Apply configuration
-    m_rightMotor.getConfigurator().apply(initialConfig);
+    // m_rightMotor.getConfigurator().apply(initialConfig);
   }
 
-  public void applyPIDConfigs(TalonFXConfiguration talonFXConfigs) {
-    Slot0Configs slot0Configs = talonFXConfigs.Slot0;
-    slot0Configs.kI = kI;
+  // public void applyPIDConfigs(TalonFXConfiguration talonFXConfigs) {
+  //   Slot0Configs slot0Configs = talonFXConfigs.Slot0;
+  //   slot0Configs.kI = kI;
 
-    // slot0Configs.kP = kPEntry.getDouble(0.0);
-    // slot0Configs.kD = kDEntry.getDouble(0.0);
+  //   // slot0Configs.kP = kPEntry.getDouble(0.0);
+  //   // slot0Configs.kD = kDEntry.getDouble(0.0);
 
-    double newP = kPEntry.getDouble(slot0Configs.kP);
-    double newD = kDEntry.getDouble(slot0Configs.kD);
-    double newG = kGEntry.getDouble(slot0Configs.kG);
-    if (newP != slot0Configs.kP || newD != slot0Configs.kD) {
-      slot0Configs.kP = newP;
-      slot0Configs.kD = newD;
-      slot0Configs.kG = newG;
-      m_rightMotor.getConfigurator().apply(initialConfig);
-      // System.out.println("Applied New PID: P=" + newP + ", D=" + newD);
-    }
-  }
+  //   double newP = kPEntry.getDouble(slot0Configs.kP);
+  //   double newD = kDEntry.getDouble(slot0Configs.kD);
+  //   double newG = kGEntry.getDouble(slot0Configs.kG);
+  //   if (newP != slot0Configs.kP || newD != slot0Configs.kD) {
+  //     slot0Configs.kP = newP;
+  //     slot0Configs.kD = newD;
+  //     slot0Configs.kG = newG;
+  //     m_rightMotor.getConfigurator().apply(initialConfig);
+  //     // System.out.println("Applied New PID: P=" + newP + ", D=" + newD);
+  //   }
+  // }
 
   public void setElevatorHeight(ElevatorHeight height) {
-    // double inches = height.getHeight();
-
-    // double rotations = inches / (Math.PI * kSprocketDiameter);
-    // m_rightMotor.setControl(PID_controller.withPosition(rotations).withFeedForward(kG));
-
-    // // Update target height entry
-    // targetHeightEntry.setDouble(inches);
-
     double inches = height.getHeight();
 
-    // Convert inches to rotations
-    double rotations = (inches / kStages) / (Math.PI * kSprocketDiameter);
-
     // Set the motor position using the PID controller
-    m_rightMotor.setControl(PID_controller.withPosition(rotations).withFeedForward(kG));
-
-    // Update target height entry
-    targetHeightEntry.setDouble(inches);
+    m_rightMotor.setControl(PID_controller.withPosition(inches).withFeedForward(kG));
   }
 
   public double getHeight() {
-    double rotations = m_rightMotor.getPosition().getValueAsDouble();
-    double primaryStageInches = rotations * Math.PI * kSprocketDiameter;
+    // double rotations = m_rightMotor.getPosition().getValueAsDouble();
+    // double primaryStageInches = rotations * Math.PI * kSprocketDiameter;
 
-    return primaryStageInches * kStages;
+    // return primaryStageInches * kStages;
+    return m_rightMotor.getPosition().getValueAsDouble();
   }
 
   public void stop() {
@@ -184,17 +177,8 @@ public class ElevatorSubsystem extends SubsystemBase {
     limitSwitchStateEntry.setBoolean(m_limitSwitch.get());
     
     if (m_limitSwitch.get()) {
-      resetPosition();
+      // resetPosition();
       // stop();
     }
-
-    // m_rightMotor.setNeutralMode(NeutralModeValue.Brake);
-    // m_leftMotor.setNeutralMode(NeutralModeValue.Brake);
-
-    // Stall protection
-    // if (m_rightMotor.getStatorCurrent().getValueAsDouble() > 40.0) {
-    //   System.out.println("Elevator Stalled! Stopping...");
-    //   stop();
-    // }
   }
 }

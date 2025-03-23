@@ -86,7 +86,8 @@ public final class Constants {
     
         // Theoretical free speed (m/s) at 12 V applied output;
         // This needs to be tuned to your individual robot
-        public static final LinearVelocity kSpeedAt12Volts = MetersPerSecond.of(4.48);
+        // public static final LinearVelocity kSpeedAt12Volts = MetersPerSecond.of(4.48);
+        public static final LinearVelocity kSpeedAt12Volts = MetersPerSecond.of(3);
     
         // Every 1 rotation of the azimuth results in kCoupleRatio drive motor turns;
         // This may need to be tuned to your individual robot
@@ -329,25 +330,25 @@ public final class Constants {
         public static final int kStages = 3;
         
         // Gear Ratio
-        public static final double kGearRatio = 3.0;
+        public static final double kGearRatio = 5.0;
         public static final double kSprocketDiameter = 1.751;
         
         // Position PID Constants
-        public static double kP = 0.5;
-        public static double kI = 0;
-        public static double kD = 0.01;
-        public static double kG = 0.1;
+        public static double kP = 21;
+        public static double kI = 5;
+        public static double kD = 0.1;
+        public static double kG = 1.5;
         // public static double kS = 0.1;
         // public static double kV = 0.1;
         // public static double kA = 0.01;
         
         // Heights in INCHES
-        public static double kHomeHeight = -0;
-        public static double kL1Height = -200;
-        public static double kL2Height = -4;
-        public static double kL3Height = -8;
-        public static double kL4Height = -10;
-        public static double kCoralIntakeHeight = -5;
+        public static double kHomeHeight = 0;
+        public static double kL1Height = .05;
+        public static double kL2Height = .1;
+        public static double kL3Height = .129;
+        public static double kL4Height = .15;
+        public static double kCoralIntakeHeight = .034;
     }
 
     public static final class AlgaeIntakeConstants {
@@ -364,9 +365,9 @@ public final class Constants {
         public static final double kIntakeGearRatio = 36.0;
         
         // Speeds
-        public static double kPivotSpeed = 0.5;
+        public static double kPivotSpeed = 0.15;
         public static double kIntakeSpeed = 0.7;
-        public static double kOuttakeSpeed = -0.7;
+        public static double kOuttakeSpeed = -1;
 
         // PID Angles
         public static double kHomeAngle = 0;
@@ -394,21 +395,30 @@ public final class Constants {
         public static final double kIntakeGearRatio = 45.0;
 
         // Speeds
-        public static double kPivotSpeed = 0.5;
-        public static double kIntakeSpeed = 0.7;
-        public static double kOuttakeSpeed = -0.7;
+        public static double kPivotSpeed = 0.1;
+        public static double kIntakeSpeed = 0.5;
+        public static double kOuttakeSpeed = -1;
 
         // PID Angles
         public static double kHomeAngle = 0;
-        public static double kL1Angle = 35;
-        public static double kL2Angle = 35;
-        public static double kL3Angle = 35;
-        public static double kL4Angle = 60;
-        public static double kIntakeAngle = 35;
+        public static double kL1Angle = -0.28;
+        public static double kL2Angle = -0.24;
+        public static double kL3Angle = -0.24;
+        public static double kL4Angle = -0.3;
+        public static double kIntakeAngle = -0.132;
 
         // PID Constants
-        public static double kPivotP = 0.5;
-        public static double kPivotI = 0;
-        public static double kPivotD = 0.01;
+        public static double kPivotP = 30;
+        public static double kPivotI = 0.5;
+        public static double kPivotD = .1;
+    }
+
+    public static final class ClimberConstants {
+        // Motor ID
+        public static final int kMotorId = 40;
+
+        // Speeds
+        public static double kClimbSpeed = 0.5;
+        public static double kLowerSpeed = -0.5;
     }
 }
